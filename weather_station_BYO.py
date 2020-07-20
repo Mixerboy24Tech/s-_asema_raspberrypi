@@ -1,10 +1,9 @@
-
+from gpiozero import Button
 import time
 import math
 import bme280_sensor
 import wind_direction_byo
 import statistics
-import ds18b20_therm
 import database
 
 
@@ -51,3 +50,36 @@ def  reset_raindall():
 def reset_wind():
         global win_count
         wind_count = 0
+
+def reset_gust():
+        global gust
+        gust =0
+
+wind_speed_sensor = Button(5)
+wind_speed_sensor.when_pressed = spin
+db = database.weather_database()
+
+
+while True:
+        start_time = time.time()
+        while time.time() - start_time <= interval:
+                wind_start_time = time.time()
+                reset_wind()
+
+                while time.time() - wind_start_time <= wind_interval:
+                        store_directions.append(wind_direction_byo.get_value())
+
+                final_speed = calculate_speed(wind_interval)
+                store_speeds.append(final_speed)
+
+        wind_average = wind_direction_byo.get_average(store_direction)
+        wind_gust = max(store_speeds)
+        wind_speed = statistics.mean(store_speeds)
+        rainfall = rain_count * BUCKET_SIZE
+        reset_rainfall()
+        store_speeds = []
+        store_directions = []
+        humidity, pressure, ambient_temp = bme280_sensor.read_all()
+
+        db.insert(ambient_temp, ground_temp, 0, pressure, humidity, wind_average, wind_speed, wind_gust, rainfall)
+        print (wind_average, wind_speed, wind_gust, rainfall, humidity, pressure, ambient_temp 
