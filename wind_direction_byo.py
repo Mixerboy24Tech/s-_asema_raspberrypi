@@ -48,7 +48,7 @@ def get_average(angles):
 
 
 def get_value(length=5):
-    deta = []
+    data = []
     print("Measuring wind direction for %d seconds..." % length)
     start_time = time.time()
 
